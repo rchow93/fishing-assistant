@@ -56,7 +56,7 @@ pip install -e .
             base_url="http://localhost:11434"
         )
 ```
-# these models worked well for this app but you can use any paid for LLM API's or other Ollama models. The key is that they can reason and tool call especially for websearch.
+These models worked well for this app but you can use any paid for LLM API's or other Ollama models. The key is that they can reason and tool call especially for websearch.
 
 4. Set up environment variables:
 ```bash
@@ -65,7 +65,7 @@ cp .env.example .env
 # Get your free API key from: https://ollama.com/account
 ```
 
-**Note:** Ollama is used for LLMs; web search is tool used for search but can be replaced by serper, tavily, or even firecrawl. (For using Ollama requires OLLAMA_API_KEY).
+**Note:** Ollama is used for LLMs; Ollama web search is tool used for search but can be replaced by serper, tavily, or even firecrawl. (For using Ollama requires OLLAMA_API_KEY).
 
 5. Start Ollama (if not already running):
 ```bash

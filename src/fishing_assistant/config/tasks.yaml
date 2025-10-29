@@ -43,7 +43,7 @@ research_fishing_task:
     Research current fishing conditions and techniques for {fish_species} in {location}.
     
     You MUST use the Web Search tool at least once to find recent sources,
-    then use Scrape URL to fetch the text from 3–5 of the top URLs.
+    then use Scrape URL to fetch the text from 3-5 of the top URLs.
     Use web search to find:
     - Current fishing reports for the area
     - Best bait and techniques for {fish_species}
