@@ -1,0 +1,83 @@
+analyze_conditions_task:
+  description: |
+    Gather and analyze all weather/marine conditions for {location} on {fishing_date}.
+    
+    IMPORTANT TOOL USAGE RULES:
+    - Use ONE tool per action. Do NOT pass a list/array of inputs.
+    - Each tool call must provide a SINGLE JSON object matching its schema:
+      - Weather Forecast: {}
+      - Marine Conditions API: {"date": "YYYY-MM-DD"}
+      - NOAA Tide Predictions: {"date": "YYYY-MM-DD"}
+      - NOAA Buoy Data: {"hours": 24}
+      - NOAA Weather Forecast: {}
+      - Moon Phase Data: {"date": "YYYY-MM-DD"}
+    - Call tools sequentially; do not batch multiple tool inputs together.
+    
+    Use your tools to collect:
+    - Current weather conditions and forecast
+    - Tide times and heights
+    - Swell height, period, and direction
+    - Wind speed and direction
+    - Moon phase and position
+    - NOAA buoy data if available
+    
+    Analyze the data to assess:
+    - Seasickness risk level (Low/Medium/High)
+    - Overall fishing conditions
+    - Best fishing times based on tides
+    - Weather safety considerations
+    
+    Provide specific, data-driven analysis without hallucinating conditions.
+  expected_output: |
+    Comprehensive marine conditions analysis including:
+    - Weather summary with specific data points
+    - Tide analysis with times and heights
+    - Swell and wind conditions
+    - Moon phase information
+    - Seasickness risk assessment
+    - Fishing timing recommendations
+  agent: marine_analyst
+
+research_fishing_task:
+  description: |
+    Research current fishing conditions and techniques for {fish_species} in {location}.
+    
+    You MUST use the Web Search tool at least once to find recent sources,
+    then use Scrape URL to fetch the text from 3–5 of the top URLs.
+    Use web search to find:
+    - Current fishing reports for the area
+    - Best bait and techniques for {fish_species}
+    - Where to fish (depths, structures, areas)
+    - Seasonal patterns and behavior
+    - Recent catch reports and success rates
+    
+    Focus on practical, actionable information for anglers.
+  expected_output: |
+    Detailed fishing intelligence report including:
+    - Current fishing conditions
+    - Recommended bait and techniques
+    - Best fishing locations and depths
+    - Species behavior patterns
+    - Success tips and strategies
+    - Sources with URLs used (from Web Search and Scrape URL)
+  agent: fishing_expert
+
+write_report_task:
+  description: |
+    Compile a comprehensive fishing report for {location} on {fishing_date} that matches this structure:
+    - H1: Rockfish Fishing Report – {location} ({fishing_date_formatted})
+    - Executive Summary (date, location, species)
+    - Weather / Marine Conditions (NOAA + Buoy) — table with Time (LT), Temp (°C), Wave Height (m), Wind (kt), Tide, Risk of Seasickness
+    - Fishing Intelligence
+      - Bite Status (recent)
+      - Prime Locations & Depths — table with Area | Structure / Feature | Typical Depth (ft)
+      - Bait Recommendations
+      - Rigging & Tackle Specs — table with Item | Recommended Specification
+      - Fishing Techniques (bulleted)
+      - Current Regulations (for location/species)
+    - Safety Tips & Practical Advice
+    - Quick Reference Table – Hourly Outlook — table with Time, Temp (°C), Wind (kt), Wave Height (m), Tide, Seasickness Risk
+    - Sources Used — list of URLs
+  expected_output: |
+    A polished markdown report matching the structure above. No raw JSON. No embedded “file saved” lines.
+  agent: report_writer
