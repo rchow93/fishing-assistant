@@ -95,7 +95,7 @@ python -m fishing_assistant.main \
 ## Project Structure
 
 ```
-Medium-Article/
+fishing-assistant/
 ├── README.md
 ├── pyproject.toml
 ├── .env.example
@@ -103,15 +103,31 @@ Medium-Article/
 └── src/
     └── fishing_assistant/
         ├── __init__.py
-        ├── crew.py              # Main crew definition
-        ├── main.py              # Entry point
+        ├── crew.py              # Agents, tasks, crew assembly
+        ├── main.py              # CLI entrypoint (console script)
         ├── config/
-        │   ├── agents.yaml       # Agent configurations
-        │   └── tasks.yaml        # Task definitions
+        │   ├── agents.yaml      # Agent definitions
+        │   └── tasks.yaml       # Task definitions and output spec
         └── tools/
             ├── __init__.py
-            └── custom_tool.py    # Custom tools and utilities
+            └── custom_tool.py   # Weather/Marine/NOAA/Moon + Web Search + Scrape URL
 ```
+
+## Models
+
+Minimal LLM config used in code (swap to your models as desired):
+```python
+self.llm = LLM(
+  model="ollama/qwen3:8b",
+  base_url="http://localhost:11434"
+)
+
+self.llm2 = LLM(
+  model="ollama/mistral-small3.2:24b",
+  base_url="http://localhost:11434"
+)
+```
+These work well for reasoning and tool use; you can swap to other Ollama or paid APIs.
 
 ## Configuration
 
@@ -137,24 +153,58 @@ Create `.env` from `env.example`:
 - `OLLAMA_API_KEY` (required for Web Search + Scrape flow)
 - `OLLAMA_BASE_URL` (default: http://localhost:11434)
 
+## Architecture & Flow
+
+- **Agents**
+  - **Marine Analyst**: Calls each data tool with a single JSON input (no batching). Uses: Weather Forecast, Marine Conditions API, NOAA Tide Predictions, NOAA Buoy Data, NOAA Weather Forecast, Moon Phase Data. Produces seasickness risk windows and an hourly view.
+  - **Fishing Intelligence Researcher**: MUST use tools. First Web Search (Ollama web_search) to find recent sources, then Scrape URL to fetch content from 3–5 top URLs. No hallucinations. Cite source URLs used.
+  - **Report Writer**: Compiles the final markdown report matching the required structure.
+
+- **Tools** (inputs are single JSON objects):
+  - Weather Forecast: {}
+  - Marine Conditions API: {"date": "YYYY-MM-DD"}
+  - NOAA Tide Predictions: {"date": "YYYY-MM-DD"}
+  - NOAA Buoy Data: {"hours": 24}
+  - NOAA Weather Forecast: {}
+  - Moon Phase Data: {"date": "YYYY-MM-DD"}
+  - Web Search (Ollama): {"query": "..."}
+  - Scrape URL: {"url": "https://example.com/page"}
+
+- **Task rules**
+  - One tool per action; never batch a list of tool inputs.
+  - Web Search → Scrape URL (3–5 pages) for fishing intelligence.
+
 ## Output
 
-The system generates a Markdown report in the `reports/` directory at the project root (and prints the absolute path). The report includes:
+Reports are saved in `reports/` and the absolute path is printed. The final report matches this structure (like the previous “old app”):
 
-- Marine weather conditions
-- Tide analysis and timing
-- Swell and wind conditions
-- Moon phase information
-- Seasickness risk assessment
-- Fishing recommendations
-- Best fishing times
-- Species-specific techniques
+- H1: Rockfish Fishing Report – {location} ({fishing_date_formatted})
+- Executive Summary (date, location, species)
+- Weather / Marine Conditions (NOAA + Buoy)
+  - Table: Time (LT), Temp (°C), Wave Height (m), Wind (kt), Tide, Risk of Seasickness
+- Fishing Intelligence
+  - Bite Status (recent)
+  - Prime Locations & Depths — Table: Area | Structure / Feature | Typical Depth (ft)
+  - Bait Recommendations
+  - Rigging & Tackle Specs — Table: Item | Recommended Specification
+  - Fishing Techniques (bulleted)
+  - Current Regulations (for location/species)
+- Safety Tips & Practical Advice
+- Quick Reference Table – Hourly Outlook — Table: Time, Temp (°C), Wind (kt), Wave Height (m), Tide, Seasickness Risk
+- Sources Used — URLs from Web Search + Scrape URL (3–5 pages)
 
 ## Troubleshooting
 
-- LiteLLM fallback: ensure minimal LLM syntax or `pip install litellm`
-- Config not found: `pip install -e .` and verify MANIFEST/package-data
-- CrewBase pattern: call `.crew().kickoff()`
+- Web Search errors: ensure `OLLAMA_API_KEY` is in `.env`
+- “File saved to” lines inside report: fixed via content normalization
+- Report path: saved to `reports/` (not root)
+- Multi-input tool calls: Marine Analyst now uses one tool per action (single JSON object)
+- Console script not found: run `pip install -e .` to register `fishing-assistant`
+
+## Privacy & Git Hygiene
+
+- `.env` is ignored; do not commit secrets. Use `.env.example` for templates.
+- Consider ignoring `reports/` if you don’t want to commit generated outputs.
 
 ## License
 
