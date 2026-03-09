@@ -13,7 +13,7 @@ Minimal, production-ready research pipeline that:
 - **Comprehensive Reports**: Detailed analysis with actionable recommendations
 - **Seasickness Risk Assessment**: Data-driven safety analysis
 
-## Quick Start
+### Quick Start
 
 ### Prerequisites
 
